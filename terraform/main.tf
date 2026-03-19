@@ -196,3 +196,41 @@ resource "aws_lambda_function" "main" {
 
   tags = { Name = local.name }
 }
+
+#--
+# IAM-POLICY
+#---
+resource "aws_iam_role_policy" "lambda_s3" {
+  name = "${local.lambda_role_name}-s3"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ListAllBuckets"
+        Effect = "Allow"
+        Action = [
+          "s3:ListAllMyBuckets"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "ListTargetBucket"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = "arn:aws:s3:::${local.s3_bucket_name}"
+      },
+      {
+        Sid    = "ReadObjectsFromTargetBucket"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${local.s3_bucket_name}/*"
+      }
+    ]
+  })
+}
